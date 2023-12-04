@@ -1,0 +1,63 @@
+<html>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script type="text/javascript" src="index.js"></script>
+<head>
+    <title>Random Javadoc URL Creator</title>
+</head>
+<body>
+
+    <div class="mt-3 container">
+        <h1>Random Javadoc URL Creator</h1>
+        <p>Random Javadoc URL Creator is a tool that generates a module-restricted URL to random Javadoc generator</p>
+        <h2>Check modules that you would like to include in your random Javadoc:</h2>
+        <div class="row modules">
+        </div>
+
+        <a class="btn btn-primary w-100 mt-3", onclick="generateRandomURL()">Generate Random Javadoc URL</a>
+        <div class="container mt-3">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="url-label", style="display: none">Generated URL:</h3>
+                    <p class="url"></p>
+
+                        <h5>How to use:</h5>
+                        <p>Copy the generated URL and paste it in your browser. You will be redirected to a random Javadoc page.</p>
+                        <p>Feel free to set this url as your home page, so you can admire random Javadoc everytime you want to open new browser window.</p>
+                        <p>Enjoy!</p>
+                </div>
+            </div>
+    </div>
+    </div>
+</body>
+<script>
+
+    fetch('https://'+ HOST +'/api/javadoc/modules')
+        .then(response => response.json())
+        .then(data => {
+            let modules = document.querySelector('.modules');
+            data.forEach(module => {
+                let moduleElement = document.createElement('div');
+
+               moduleElement.innerHTML = `
+<input class="m-3" type="checkbox" name="module" value="${module.name}", id="${module.name}">
+    <label for="${module.name}">${module.name}</label>
+`;
+                modules.appendChild(moduleElement);
+            });
+        });
+
+
+
+    function generateRandomURL() {
+        let modules = document.querySelectorAll('input[name="module"]:checked');
+        let moduleNames = [];
+        modules.forEach(module => {
+            moduleNames.push(module.value);
+        });
+        Array.from(document.getElementsByClassName('url-label')).forEach(url => url.style.display = 'block');
+        let generatedUrl = 'https://' + HOST + '/?modules=' + moduleNames.join(',');
+        document.getElementsByClassName('url')[0].innerHTML = `<a style="font-weight: bold" href="${generatedUrl}">${generatedUrl}</a>`
+
+    }
+</script>
+</html>

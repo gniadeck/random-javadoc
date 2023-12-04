@@ -1,0 +1,24 @@
+<html>
+<script type="text/javascript" src="index.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<head>
+    <title>Redirecting...</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Redirecting to your random javadoc...</h1>
+        <img src="https://i.giphy.com/media/sIIhZliB2McAo/giphy.webp" alt="redirecting" class="w-100">
+    </div>
+</body>
+<script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const modules = urlParams.get('modules');
+    const url = modules ? `https://${HOST}/api/javadoc/random?modules=${modules}` : `https://${HOST}/api/javadoc/random`;
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            window.location = data.url
+        });
+</script>
+</html>

@@ -1,0 +1,53 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+        - name: Setup Java
+          uses: actions/setup-java@v3
+          with:
+            java-version: '17'
+            distribution: 'temurin'
+        - name: Build using Maven
+          run: mvn --batch-mode --update-snapshots verify -DskipTests
+        - name: Move artifact to directory
+          run: mkdir staging && cp target/*.jar staging
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: build
+            path: staging  
+            retention-days: 1
+  deploy:
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+      - name: Get artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+      - name: Replace daemon artifact
+        uses: garygrossgarten/github-action-scp@v0.8.0
+        with:
+          local: random-javadoc-0.0.1-SNAPSHOT.jar
+          remote: /home/github-actions/random-javadoc/random-javadoc-0.0.1-SNAPSHOT.jar
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      - name: Restart Application Daemon
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: sudo systemctl restart ${{ secrets.PROCESS_NAME }}; systemctl status ${{ secrets.PROCESS_NAME }} | head --lines=3
